@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: water-gis-backend
+  datasource:
+    # Kimlik bilgileri ortam değişkenlerinden gelir (.env / Docker secret).
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
