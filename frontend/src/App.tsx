@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { fetchHealth } from "./api/health";
 import MapView from "./components/Map/MapView";
+import WaterSourceForm from "./components/Sidebar/WaterSourceForm";
 
 export default function App() {
   const [status, setStatus] = useState("kontrol ediliyor...");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [pickMode, setPickMode] = useState(false);
+  const [pickedPoint, setPickedPoint] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     fetchHealth()
@@ -19,7 +23,26 @@ export default function App() {
           Backend: <strong>{status}</strong>
         </span>
       </header>
-      <MapView />
+      <main className="content">
+        <WaterSourceForm
+          pickMode={pickMode}
+          pickedPoint={pickedPoint}
+          onStartPick={() => setPickMode(true)}
+          onSaved={() => {
+            setPickedPoint(null);
+            setReloadKey((k) => k + 1);
+          }}
+        />
+        <MapView
+          reloadKey={reloadKey}
+          pickMode={pickMode}
+          pickedPoint={pickedPoint}
+          onPick={(latlng) => {
+            setPickedPoint(latlng);
+            setPickMode(false);
+          }}
+        />
+      </main>
     </div>
   );
 }

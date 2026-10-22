@@ -21,15 +21,20 @@ docker compose up --build
 - Önyüz: http://localhost:3000
 - Backend: http://localhost:8080/api/health
 - PostGIS: `localhost:5432`
+- GeoServer (WMS/WFS): http://localhost:8081/geoserver
 
-Önyüzdeki Nginx, `/api` isteklerini `backend` servisine yönlendirir. İlk Liquibase migration'ı PostGIS extension'ını oluşturur.
+Önyüzdeki Nginx, `/api` isteklerini `backend` servisine, `/geoserver` isteklerini GeoServer'a yönlendirir.
+`geoserver-init` servisi ilk açılışta `watergis` workspace'ini, PostGIS datastore'unu ve `water_source`
+katmanını REST API ile oluşturur. WMS ve WFS'in nerede ve neden kullanıldığı: [docs/wms-wfs.md](docs/wms-wfs.md). İlk Liquibase migration'ı PostGIS extension'ını oluşturur.
 
 ## Yerel geliştirme
 
 Veritabanını Docker ile ayağa kaldırın:
 
 ```bash
-docker compose up -d db
+docker compose up -d db geoserver
+# backend çalıştıktan (tablo oluştuktan) sonra GeoServer katmanını yayınlayın:
+docker compose run --rm --no-deps geoserver-init
 ```
 
 Backend (Java 21 ve Maven gerekir):
@@ -47,5 +52,5 @@ mvn test   # TestContainers ile gerçek PostGIS üzerinde çalışır, Docker ge
 ```bash
 cd frontend
 npm install
-npm run dev   # http://localhost:5173, /api -> http://localhost:8080
+npm run dev   # http://localhost:5173, /api -> :8080, /geoserver -> :8081
 ```
