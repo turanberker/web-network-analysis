@@ -1,0 +1,9 @@
+# Linux konteynerlerine bağlanan / içinde çalışan dosyalar Windows'ta da LF kalmalı
+# (CRLF ile sh "set: illegal option -" hatası verir).
+*.sh   text eol=lf
+*.sld  text eol=lf
+*.conf text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sql  text eol=lf
+Dockerfile text eol=lf

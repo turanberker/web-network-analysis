@@ -9,7 +9,22 @@ WS=watergis
 STORE=postgis
 
 echo "GeoServer bekleniyor: $GS"
-until curl -fs -u "$AUTH" "$GS/rest/about/version.json" >/dev/null; do sleep 3; done
+# 401: .env'deki şifre GeoServer'ınkiyle uyuşmuyor (kartoza şifreyi yalnızca ilk kurulumda, volume boşken alır).
+i=0
+while :; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" -u "$AUTH" "$GS/rest/about/version.json" || true)
+  [ "$code" = 200 ] && break
+  if [ "$code" = 401 ]; then
+    echo "HATA: GeoServer kullanıcı/şifre reddedildi (401). GEOSERVER_ADMIN_* .env değerlerini kontrol edin." >&2
+    exit 1
+  fi
+  i=$((i + 1))
+  if [ "$i" -ge 100 ]; then
+    echo "HATA: GeoServer 5 dakikada yanıt vermedi (son HTTP kodu: $code)." >&2
+    exit 1
+  fi
+  sleep 3
+done
 
 # .json uzantısı: Accept başlığı olmadan bazı REST uçları (styles) 500 döndürüyor.
 exists() { curl -fs -o /dev/null -u "$AUTH" "$1.json"; }
