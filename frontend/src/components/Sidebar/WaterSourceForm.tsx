@@ -34,7 +34,7 @@ export default function WaterSourceForm({ pickMode, pickedPoint, onStartPick, on
   }
 
   return (
-    <form className="sidebar" onSubmit={handleSubmit}>
+    <form className="sidebar__section" onSubmit={handleSubmit}>
       <h2>Su kaynağı ekle</h2>
       <label>
         Ad

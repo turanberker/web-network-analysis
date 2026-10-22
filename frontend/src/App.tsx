@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { fetchHealth } from "./api/health";
 import MapView from "./components/Map/MapView";
 import WaterSourceForm from "./components/Sidebar/WaterSourceForm";
+import PipeForm from "./components/Sidebar/PipeForm";
 
 export default function App() {
   const [status, setStatus] = useState("kontrol ediliyor...");
   const [reloadKey, setReloadKey] = useState(0);
   const [pickMode, setPickMode] = useState(false);
   const [pickedPoint, setPickedPoint] = useState<[number, number] | null>(null);
+  const [drawMode, setDrawMode] = useState(false);
+  const [drawVertices, setDrawVertices] = useState<[number, number][]>([]);
 
   useEffect(() => {
     fetchHealth()
@@ -24,15 +27,39 @@ export default function App() {
         </span>
       </header>
       <main className="content">
-        <WaterSourceForm
-          pickMode={pickMode}
-          pickedPoint={pickedPoint}
-          onStartPick={() => setPickMode(true)}
-          onSaved={() => {
-            setPickedPoint(null);
-            setReloadKey((k) => k + 1);
-          }}
-        />
+        <aside className="sidebar">
+          <WaterSourceForm
+            pickMode={pickMode}
+            pickedPoint={pickedPoint}
+            onStartPick={() => {
+              setDrawMode(false);
+              setPickMode(true);
+            }}
+            onSaved={() => {
+              setPickedPoint(null);
+              setReloadKey((k) => k + 1);
+            }}
+          />
+          <PipeForm
+            drawMode={drawMode}
+            vertices={drawVertices}
+            onStartDraw={() => {
+              setPickMode(false);
+              setDrawVertices([]);
+              setDrawMode(true);
+            }}
+            onUndo={() => setDrawVertices((v) => v.slice(0, -1))}
+            onCancel={() => {
+              setDrawMode(false);
+              setDrawVertices([]);
+            }}
+            onSaved={() => {
+              setDrawMode(false);
+              setDrawVertices([]);
+              setReloadKey((k) => k + 1);
+            }}
+          />
+        </aside>
         <MapView
           reloadKey={reloadKey}
           pickMode={pickMode}
@@ -41,6 +68,9 @@ export default function App() {
             setPickedPoint(latlng);
             setPickMode(false);
           }}
+          drawMode={drawMode}
+          drawVertices={drawVertices}
+          onAddVertex={(latlng) => setDrawVertices((v) => [...v, latlng])}
         />
       </main>
     </div>

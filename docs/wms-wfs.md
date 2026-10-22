@@ -70,3 +70,24 @@ curl -o kaynaklar.png "http://localhost:8081/geoserver/watergis/wms?service=WMS&
 ```
 
 GeoServer yönetim arayüzü: http://localhost:8081/geoserver (kullanıcı/şifre `.env` içindeki `GEOSERVER_ADMIN_*`).
+
+## Boru hatları (`pipe` tablosu)
+
+- **Çizim:** Kenar çubuğunda "Haritada çizmeye başla" → haritaya her tıklama bir köşe ekler
+  (turuncu kesikli önizleme). Önyüz yalnızca tıklanan koordinatları toplar, hesap yapmaz.
+- **Yazma:** `POST /api/pipes` GeoJSON `LineString` alır. Backend
+  `ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(...)), 4326)` ile kaydeder; `ST_Force2D` olası
+  rakım (Z) değerini atar. `geometry(LineString, 4326)` sütunu başka tipleri reddeder (400).
+- **Uzunluk:** `length_m` sütunu `ST_Length(geom::geography)` ile PostGIS'te hesaplanan
+  generated column'dur. `geometry` üzerinde `ST_Length` derece döndürür (anlamsız);
+  `geography`'ye cast edince WGS 84 elipsoidi üzerinde **metre** verir. Projeksiyon (ör. EPSG:5254)
+  gerekmez.
+- **Okuma (WFS):** `watergis:pipe` katmanı "Boru hatları (WFS - vektör)" olarak mavi çizgilerle
+  gösterilir; tıklanınca malzeme / çap / uzunluk popup'ı açılır. bbox filtresi çizgiler için
+  "görünen alanla kesişen" anlamına gelir; tamamen içinde olması gerekmez.
+- **WMS:** Katman GeoServer'da `geoserver/pipe.sld` stiliyle de yayınlanır (WMS GetMap ile resim
+  alınabilir), ama önyüz şimdilik yalnızca WFS kullanır; borularda tıklama/popup gerektiği için.
+
+```bash
+curl "http://localhost:8081/geoserver/watergis/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=watergis:pipe&outputFormat=application/json&srsName=EPSG:4326&bbox=39.85,32.6,40.0,33.1,urn:ogc:def:crs:EPSG::4326"
+```

@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/migration/001-enable-postgis.sql
   - include:
       file: db/migration/002-create-water-source.sql
+  - include:
+      file: db/migration/003-create-pipe.sql

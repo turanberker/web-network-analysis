@@ -1,4 +1,13 @@
-import { LayerGroup, LayersControl, MapContainer, Marker, TileLayer, WMSTileLayer, useMapEvents } from "react-leaflet";
+import {
+  LayerGroup,
+  LayersControl,
+  MapContainer,
+  Marker,
+  Polyline,
+  TileLayer,
+  WMSTileLayer,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -7,6 +16,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { WMS_URL } from "../../api/geoserver";
 import { WATER_SOURCE_LAYER } from "../../api/waterSources";
 import WaterSourceWfsLayer from "./WaterSourceWfsLayer";
+import PipeWfsLayer from "./PipeWfsLayer";
 
 // Vite ile paketlenince Leaflet'in varsayılan marker görselleri bulunamaz; açıkça veriyoruz.
 L.Icon.Default.mergeOptions({ iconUrl: markerIcon, iconRetinaUrl: markerIcon2x, shadowUrl: markerShadow });
@@ -20,9 +30,14 @@ interface Props {
   pickMode: boolean;
   pickedPoint: [number, number] | null;
   onPick: (latlng: [number, number]) => void;
+  drawMode: boolean;
+  /** Çizilmekte olan borunun köşeleri ([lat, lng]). */
+  drawVertices: [number, number][];
+  onAddVertex: (latlng: [number, number]) => void;
 }
 
-function PickHandler({ enabled, onPick }: { enabled: boolean; onPick: Props["onPick"] }) {
+/** Aktifken her harita tıklamasını bir koordinat olarak bildirir (nokta seçme ve boru çizimi için). */
+function ClickHandler({ enabled, onPick }: { enabled: boolean; onPick: Props["onPick"] }) {
   useMapEvents({
     click(e) {
       if (enabled) onPick([e.latlng.lat, e.latlng.lng]);
@@ -31,12 +46,20 @@ function PickHandler({ enabled, onPick }: { enabled: boolean; onPick: Props["onP
   return null;
 }
 
-export default function MapView({ reloadKey, pickMode, pickedPoint, onPick }: Props) {
+export default function MapView({
+  reloadKey,
+  pickMode,
+  pickedPoint,
+  onPick,
+  drawMode,
+  drawVertices,
+  onAddVertex,
+}: Props) {
   return (
     <MapContainer
       center={INITIAL_CENTER}
       zoom={INITIAL_ZOOM}
-      className={pickMode ? "map map--picking" : "map"}
+      className={pickMode || drawMode ? "map map--picking" : "map"}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıcıları'
@@ -62,9 +85,20 @@ export default function MapView({ reloadKey, pickMode, pickedPoint, onPick }: Pr
             <WaterSourceWfsLayer reloadKey={reloadKey} />
           </LayerGroup>
         </LayersControl.Overlay>
+        {/* Borular yalnızca WFS ile: tıklanınca malzeme/çap/uzunluk görünsün diye vektör gerekir. */}
+        <LayersControl.Overlay checked name="Boru hatları (WFS - vektör)">
+          <LayerGroup>
+            <PipeWfsLayer reloadKey={reloadKey} />
+          </LayerGroup>
+        </LayersControl.Overlay>
       </LayersControl>
-      <PickHandler enabled={pickMode} onPick={onPick} />
+      <ClickHandler enabled={pickMode} onPick={onPick} />
+      <ClickHandler enabled={drawMode} onPick={onAddVertex} />
       {pickedPoint && <Marker position={pickedPoint} />}
+      {/* Çizim önizlemesi: henüz kaydedilmemiş köşeler kesikli çizgiyle gösterilir. */}
+      {drawVertices.length > 0 && (
+        <Polyline positions={drawVertices} pathOptions={{ color: "#f4511e", weight: 3, dashArray: "6 6" }} />
+      )}
     </MapContainer>
   );
 }
