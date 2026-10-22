@@ -20,16 +20,12 @@ public class WaterSourceService {
     /** Yeni kaynağı kaydeder ve PostGIS'in ürettiği GeoJSON Feature metnini döndürür. */
     @Transactional
     public String create(WaterSourceRequest request) {
-        if (request.geometry() == null || request.properties() == null
-                || request.properties().name() == null || request.properties().sourceType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "geometry, properties.name ve properties.sourceType zorunludur");
+        if (request.geometry() == null || request.properties() == null || request.properties().name() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "geometry ve properties.name zorunludur");
         }
-        var props = request.properties();
         Long id;
         try {
-            id = repository.insertFromGeoJson(props.name(), props.sourceType().name(),
-                    props.capacityM3PerDay(), request.geometry().toString());
+            id = repository.insertFromGeoJson(request.properties().name(), request.geometry().toString());
         } catch (DataAccessException e) {
             // Geçersiz GeoJSON veya Point dışı geometri PostGIS tarafından reddedilir.
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Geçersiz geometri: Point bekleniyor", e);

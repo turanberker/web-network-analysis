@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 public interface WaterSourceRepository extends JpaRepository<WaterSource, Long> {
@@ -16,7 +15,7 @@ public interface WaterSourceRepository extends JpaRepository<WaterSource, Long> 
      */
     @Query(value = """
             SELECT ST_AsGeoJSON(t.*, 'geom', 6)
-            FROM (SELECT id, name, source_type, capacity_m3_per_day, geom
+            FROM (SELECT id, name, geom
                   FROM water_source WHERE id = :id) t
             """, nativeQuery = true)
     Optional<String> findFeatureById(@Param("id") Long id);
@@ -26,12 +25,9 @@ public interface WaterSourceRepository extends JpaRepository<WaterSource, Long> 
      * Sütun tipi geometry(Point, 4326) olduğu için Point dışı geometriler DB tarafından reddedilir.
      */
     @Query(value = """
-            INSERT INTO water_source (name, source_type, capacity_m3_per_day, geom)
-            VALUES (:name, :sourceType, :capacity, ST_SetSRID(ST_GeomFromGeoJSON(:geometry), 4326))
+            INSERT INTO water_source (name, geom)
+            VALUES (:name, ST_SetSRID(ST_GeomFromGeoJSON(:geometry), 4326))
             RETURNING id
             """, nativeQuery = true)
-    Long insertFromGeoJson(@Param("name") String name,
-                           @Param("sourceType") String sourceType,
-                           @Param("capacity") BigDecimal capacity,
-                           @Param("geometry") String geometryJson);
+    Long insertFromGeoJson(@Param("name") String name, @Param("geometry") String geometryJson);
 }

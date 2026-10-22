@@ -41,7 +41,12 @@ fi
 # publish_layer <tablo> <başlık>: /init/<tablo>.sld stilini yükler ve tabloyu katman olarak yayınlar.
 publish_layer() {
   LAYER=$1
-  if ! exists "$GS/rest/styles/$LAYER"; then
+  # Stil her çalıştırmada güncellenir; böylece .sld değişiklikleri mevcut kurulumlara da yansır.
+  if exists "$GS/rest/styles/$LAYER"; then
+    curl -fsS -o /dev/null -u "$AUTH" -X PUT -H "Content-Type: application/vnd.ogc.sld+xml" \
+      --data-binary "@/init/$LAYER.sld" "$GS/rest/styles/$LAYER"
+    echo "stil güncellendi: $LAYER"
+  else
     post "$GS/rest/styles?name=$LAYER" application/vnd.ogc.sld+xml "@/init/$LAYER.sld"
     echo "stil yüklendi: $LAYER"
   fi

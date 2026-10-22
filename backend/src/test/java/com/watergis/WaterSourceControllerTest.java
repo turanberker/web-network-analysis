@@ -36,7 +36,7 @@ class WaterSourceControllerTest {
         ResponseEntity<String> response = post("""
                 {"type":"Feature",
                  "geometry":{"type":"Point","coordinates":[32.8597,39.9334]},
-                 "properties":{"name":"Kızılay Kuyusu","sourceType":"WELL","capacityM3PerDay":500}}
+                 "properties":{"name":"Kızılay Kuyusu"}}
                 """);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -46,7 +46,7 @@ class WaterSourceControllerTest {
         assertThat(feature.path("geometry").path("coordinates").get(0).asDouble()).isEqualTo(32.8597);
         assertThat(feature.path("geometry").path("coordinates").get(1).asDouble()).isEqualTo(39.9334);
         assertThat(feature.path("properties").path("name").asText()).isEqualTo("Kızılay Kuyusu");
-        assertThat(feature.path("properties").path("source_type").asText()).isEqualTo("WELL");
+        assertThat(feature.path("properties").has("source_type")).isFalse();
     }
 
     @Test
@@ -54,7 +54,7 @@ class WaterSourceControllerTest {
         ResponseEntity<String> response = post("""
                 {"type":"Feature",
                  "geometry":{"type":"LineString","coordinates":[[32.85,39.93],[32.86,39.94]]},
-                 "properties":{"name":"Hatalı","sourceType":"WELL"}}
+                 "properties":{"name":"Hatalı"}}
                 """);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/migration/002-create-water-source.sql
   - include:
       file: db/migration/003-create-pipe.sql
+  - include:
+      file: db/migration/004-drop-water-source-type.sql

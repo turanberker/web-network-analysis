@@ -13,8 +13,7 @@ Yazma işlemi ise Spring Boot REST API'sinden geçer.
 
 ## WMS (Web Map Service) — "Su kaynakları (WMS - görüntü)" katmanı
 
-- **Ne yapar:** Sunucu, veriyi SLD stiline göre (baraj = mavi kare, pınar = turkuaz daire,
-  kuyu = kahverengi üçgen, depo = yeşil yıldız) **PNG resmine çizer**. Tarayıcı yalnızca resim görür.
+- **Ne yapar:** Sunucu, veriyi SLD stiline göre (mavi daire) **PNG resmine çizer**. Tarayıcı yalnızca resim görür.
 - **Nerede:** `frontend/src/components/Map/MapView.tsx` → `<WMSTileLayer url="/geoserver/watergis/wms" layers="watergis:water_source">`.
   Leaflet her karo için `GetMap` isteği atar (`srs=EPSG:3857`, `bbox=...`, `width=256`).
 - **Neden burada:** Görselleştirme için. Kaynak sayısı 10 de olsa 100.000 de olsa tarayıcıya
@@ -28,10 +27,10 @@ Yazma işlemi ise Spring Boot REST API'sinden geçer.
 ## WFS (Web Feature Service) — "Su kaynakları (WFS - vektör)" katmanı
 
 - **Ne yapar:** Veriyi **vektör olarak (GeoJSON)** döndürür: geometri + tüm öznitelikler
-  (`id`, `name`, `source_type`, `capacity_m3_per_day`).
+  (`id`, `name`).
 - **Nerede:** `frontend/src/api/waterSources.ts` → `fetchWaterSourcesInBounds()` ve
   `frontend/src/components/Map/WaterSourceWfsLayer.tsx` (pembe halkalar).
-- **Neden burada:** Etkileşim için. Her kaynak tıklanabilir, popup'ta adı/tipi/kapasitesi görünür.
+- **Neden burada:** Etkileşim için. Her kaynak tıklanabilir, popup'ta adı ve id'si görünür.
   İleride filtreleme, seçme, analiz sonucunu vurgulama gibi işler vektör veri ister.
 - **bbox filtresi (CLAUDE.md kural 5):** Harita her kaydırıldığında (`moveend`) yalnızca görünen
   alan istenir. GeoServer bunu PostGIS'e `geom && ST_MakeEnvelope(...)` olarak çevirir ve
@@ -43,7 +42,7 @@ Yazma işlemi ise Spring Boot REST API'sinden geçer.
 ## Yazma neden WFS-T değil de REST?
 
 WFS'in yazma sürümü (WFS-T, `Transaction`) de vardır; ama iş kuralları (zorunlu alanlar,
-tip kontrolü, ileride yetki/audit) Spring Boot'ta tutulmak istendiği için yeni kaynak
+ileride yetki/audit) Spring Boot'ta tutulmak istendiği için yeni kaynak
 `POST /api/water-sources` ile eklenir. Backend GeoJSON geometrisini Java'da parse etmeden
 `ST_SetSRID(ST_GeomFromGeoJSON(...), 4326)` ile PostGIS'e verir; Point olmayan geometriyi
 `geometry(Point, 4326)` sütunu reddeder ve API 400 döner. Kayıttan sonra önyüz WFS'i yeniden

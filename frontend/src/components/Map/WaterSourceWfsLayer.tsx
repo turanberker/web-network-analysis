@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { fetchWaterSourcesInBounds } from "../../api/waterSources";
-import { WATER_SOURCE_TYPE_LABELS, type WaterSourceFeature } from "../../types/waterSource";
+import type { WaterSourceFeature } from "../../types/waterSource";
 
 interface Props {
   /** Değiştiğinde katman yeniden yüklenir (yeni kaynak eklendikten sonra). */
@@ -10,7 +10,7 @@ interface Props {
 
 /**
  * WFS katmanı: kaynaklar tarayıcıya vektör (GeoJSON) olarak gelir.
- * Her nokta tıklanabilir ve öznitelikleri (ad, tip, kapasite) popup'ta gösterilir.
+ * Her nokta tıklanabilir ve öznitelikleri (id, ad) popup'ta gösterilir.
  * Harita her kaydırıldığında yalnızca görünen bbox içindeki kaynaklar istenir.
  */
 export default function WaterSourceWfsLayer({ reloadKey }: Props) {
@@ -40,11 +40,7 @@ export default function WaterSourceWfsLayer({ reloadKey }: Props) {
             pathOptions={{ color: "#d81b60", weight: 2, fillOpacity: 0 }}
           >
             <Popup>
-              <strong>{p.name}</strong>
-              <br />
-              Tip: {WATER_SOURCE_TYPE_LABELS[p.source_type] ?? p.source_type}
-              <br />
-              Kapasite: {p.capacity_m3_per_day != null ? `${p.capacity_m3_per_day} m³/gün` : "-"}
+              <strong>{p.name}</strong> (#{p.id})
               <br />
               <small>Kaynak: WFS GetFeature</small>
             </Popup>
