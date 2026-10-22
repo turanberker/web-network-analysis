@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      "/api": process.env.VITE_API_PROXY ?? "http://localhost:8080",
+      "/api": process.env.VITE_API_PROXY ?? "http://localhost:9000",
       "/geoserver": process.env.VITE_GEOSERVER_PROXY ?? "http://localhost:8081",
     },
   },

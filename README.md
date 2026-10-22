@@ -52,5 +52,5 @@ mvn test   # TestContainers ile gerçek PostGIS üzerinde çalışır, Docker ge
 ```bash
 cd frontend
 npm install
-npm run dev   # http://localhost:5173, /api -> :8080, /geoserver -> :8081
+npm run dev   # http://localhost:5173, /api -> :9000, /geoserver -> :8081
 ```
