@@ -36,10 +36,11 @@ Backend (Java 21 ve Maven gerekir):
 
 ```bash
 cd backend
-export DB_URL=jdbc:postgresql://localhost:5432/watergis DB_USERNAME=watergis DB_PASSWORD=degistir-beni
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 mvn test   # TestContainers ile gerçek PostGIS üzerinde çalışır, Docker gerekir
 ```
+
+`local` profili (`application-local.yml`) `localhost`'taki veritabanına bağlanır ve kimlik bilgilerini repo kökündeki `.env` dosyasından okur. IntelliJ IDEA'da `.run/Backend (local).run.xml` yapılandırması hazırdır: proje açıldığında çalıştırma listesinde **Backend (local)** olarak görünür.
 
 Önyüz:
 
